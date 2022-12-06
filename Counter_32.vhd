@@ -23,7 +23,7 @@ use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 
-entity ccc is
+entity Counter_32 is
 generic(
 	BITS: positive := 5;
 	POW_OF_2: positive := 3
@@ -36,10 +36,10 @@ port (
 	CLR: in std_logic; -- async reset signal
 	Q: inout std_logic_vector (BITS-1 downto 0):= (others => '0') -- output
 );
-end ccc;
+end Counter_32;
 
 
-architecture Behavioral of ccc is
+architecture Behavioral of Counter_32 is
 	signal clock: std_logic := '0';
 	signal count: std_logic_vector(BITS-1 downto 0):= (others => '0');
 	signal maxCount: std_logic_vector(BITS-1 downto 0):= (others => '1');
@@ -54,7 +54,7 @@ begin
 			clock <= '0';
 		elsif(CLK_MODE = '1') then
 			if(CLK_INTERNAL'event and CLK_INTERNAL = '1') then
-				if (clockCount = clockModulus - 1) then
+				if clockCount=clockModulus-1 then
 					clockCount := 0;
 					clock <= '1';
 				else 
