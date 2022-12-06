@@ -67,10 +67,10 @@ begin
 	begin
 		-- get the max countung value from the switches on the board
 		maxCount <= MOD_BIT_4 & 
-					MOD_BIT_3 & 
-					MOD_BIT_2 & 
-					MOD_BIT_1 & 
-					MOD_BIT_0;
+		            MOD_BIT_3 & 
+		            MOD_BIT_2 & 
+		            MOD_BIT_1 & 
+		            MOD_BIT_0;
 	end process;
 	
 	process (CLR, DIR, clock, maxCount)
