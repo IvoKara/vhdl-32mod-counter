@@ -12,8 +12,7 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 entity Counter_32 is
 generic(
-	BITS: positive := 5; -- 5 bits for MOD-32
-	POW_OF_2: positive := 3 -- 2^3 = 32
+	BITS: positive := 5 -- 5 bits for MOD-32
 );
 port (
 	DIR: in std_logic; -- dircation: '0' upwards, '1' downwards - SW
@@ -24,11 +23,7 @@ port (
 	
 	CLR: in std_logic; -- async reset signal - BTN
 	
-	MOD_BIT_0: in std_logic; -- LSB for module number - SW 
-	MOD_BIT_1: in std_logic; -- second bit for module number - SW
-	MOD_BIT_2: in std_logic; -- third bit for module number - SW
-	MOD_BIT_3: in std_logic; -- forth bit for module number - SW
-	MOD_BIT_4: in std_logic; -- MSB for module number  - SW
+	MAX_COUNT: in std_logic_vector (BITS-1 downto 0); -- vector module number - 5xSW 
 	
 	Q: inout std_logic_vector (BITS-1 downto 0):= (others => '0') -- output
 );
@@ -38,7 +33,6 @@ end Counter_32;
 architecture Behavioral of Counter_32 is
 	signal clock: std_logic := '0'; -- this module's clock
 	signal count: std_logic_vector(BITS-1 downto 0):= (others => '0');
-	signal maxCount: std_logic_vector(BITS-1 downto 0):= (others => '1'); -- max counting value, default is "11111" (31)
 begin
 
 	process(CLR, CLK_MANUAL, CLK_MODE, CLK_INTERNAL)
@@ -63,36 +57,27 @@ begin
 		end if;
 	end process;
 	
-	process (MOD_BIT_0, MOD_BIT_1, MOD_BIT_2, MOD_BIT_3, MOD_BIT_4)
-	begin
-		-- get the max countung value from the switches on the board
-		maxCount <= MOD_BIT_4 & 
-		            MOD_BIT_3 & 
-		            MOD_BIT_2 & 
-		            MOD_BIT_1 & 
-		            MOD_BIT_0;
-	end process;
-	
-	process (CLR, DIR, clock, maxCount)
+	process (clock, CLR, DIR, MAX_COUNT)
 	begin
 		if (CLR = '1') then
 			 -- reset count value on async reset signal
 			count <= (others => '0');
 		elsif (clock'event and clock = '1') then -- if rising adge of module's counter
 			if (DIR = '1') then -- if direction is downwards
-				if (count = "00000" or count > maxCount) then
+				if (count = "00000" or count > MAX_COUNT) then
 					-- if the current counting value is equal to 0 (minimum counting value)
 					-- the count value will be set to be equal to the maximum value
 					-- or if the current counting value is greater than the maximum
 					-- i.e. the count value is 10 but the maximum value has been changed to 5
 					-- then the count value is going to be 5
-					count <= maxCount;
+					count <= MAX_COUNT;
 				else
 					count <= count - '1';
 				end if;
 			else  -- if direction is upwards
-				if (count >= maxCount) then 
-					-- if the current counting value is greater or equal the maximum
+				if (count > MAX_COUNT) then 
+					-- if the current counting value is greater maximum
+					-- i.e. it will count up from 0 to MAX_COUNT 
 					-- even if the count value is greater than the maximum value that was recently changed
 					-- the count value is going to be resetted
 					count <= (others => '0');
